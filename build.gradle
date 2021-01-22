@@ -1,12 +1,20 @@
+buildscript {
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.10.RELEASE"
+    }
+}
+
 plugins {
     id 'org.springframework.boot' version '2.4.1'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
+    id 'java-library'
 }
 
 group = 'com.jojoldu.blogcode'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 configurations {
     compileOnly {
@@ -14,28 +22,56 @@ configurations {
     }
 }
 
-repositories {
-    mavenCentral()
-    jcenter()
-    maven { url 'https://jitpack.io' }
+allprojects {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {url "https://repo.spring.io/snapshot" }
+        maven {url "https://repo.spring.io/milestone" }
+        maven {url "https://repo.spring.io/release" }
+    }
 }
 
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.batch:spring-batch-integration'
+def projects = [project(':integration-slave'), project(':integration-master')]
 
-    implementation('com.h2database:h2')
-    implementation 'org.mariadb.jdbc:mariadb-java-client'
+configure(projects) {
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'java'
+    apply plugin: 'java-library'
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    dependencies {
+        implementation 'org.springframework.cloud:spring-cloud-starter-aws'
+        implementation 'org.springframework.cloud:spring-cloud-starter-aws-messaging'
+        implementation 'org.springframework.cloud:spring-cloud-aws-autoconfigure'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-batch'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.batch:spring-batch-integration'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.batch:spring-batch-test'
+        implementation 'com.h2database:h2'
+        implementation 'org.mariadb.jdbc:mariadb-java-client'
+
+        implementation 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.projectlombok:lombok'
+
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.batch:spring-batch-test'
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2020.0.0'
+        }
+    }
+
+    test {
+        useJUnitPlatform()
+    }
 }
 
-test {
-    useJUnitPlatform()
-}
+
+
+

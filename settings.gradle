@@ -1,1 +1,3 @@
 rootProject.name = 'spring-batch-integration-in-action'
+include 'integration-slave'
+include 'integration-master'
